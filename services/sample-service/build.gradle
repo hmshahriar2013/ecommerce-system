@@ -1,0 +1,30 @@
+/*
+ * Build configuration for sample-service
+ * Demonstrates hexagonal architecture with Spring Boot
+ */
+
+dependencies {
+    // Spring Boot Web for REST API (inbound adapter)
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    
+    // Spring Boot Data JPA (outbound adapter)
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    
+    // H2 Database for development
+    runtimeOnly 'com.h2database:h2'
+    
+    // Validation API (can be used in domain and application layers)
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    
+    // Jackson for JSON processing (if needed in adapters)
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+}
+
+bootJar {
+    enabled = true
+    archiveFileName = 'sample-service.jar'
+}
+
+jar {
+    enabled = false
+}

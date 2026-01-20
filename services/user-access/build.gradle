@@ -1,0 +1,36 @@
+/*
+ * Build configuration for user-access service
+ * Handles authentication, authorization, and user management
+ */
+
+dependencies {
+    // Shared common module
+    implementation project(':shared:common')
+    
+    // Spring Boot Web for REST API (inbound adapter)
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    
+    // Spring Boot Data JPA (outbound adapter)
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    
+    // Spring AMQP for RabbitMQ
+    implementation 'org.springframework.boot:spring-boot-starter-amqp'
+    
+    // PostgreSQL for event store and read models
+    runtimeOnly 'org.postgresql:postgresql'
+    
+    // H2 for development
+    runtimeOnly 'com.h2database:h2'
+    
+    // Validation
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+}
+
+bootJar {
+    enabled = true
+    archiveFileName = 'user-access-service.jar'
+}
+
+jar {
+    enabled = false
+}

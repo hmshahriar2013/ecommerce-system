@@ -1,0 +1,22 @@
+/*
+ * Root settings for the backend monorepo
+ * Defines the project name and includes all service modules
+ */
+
+rootProject.name = 'backend-monorepo'
+
+// Shared module for core abstractions (CQRS, Event Sourcing, DDD)
+include 'shared:common'
+
+// Include all service modules (bounded contexts)
+include 'services:sample-service'
+include 'services:user-access'
+include 'services:customer-profile'
+include 'services:catalog'
+include 'services:pricing'
+include 'services:inventory'
+include 'services:cart'
+include 'services:orders'
+include 'services:payments'
+include 'services:fulfillment'
+include 'services:support'

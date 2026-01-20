@@ -1,0 +1,26 @@
+/*
+ * Build configuration for shared common module
+ * Contains core CQRS, Event Sourcing, and DDD abstractions
+ */
+
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    // Jackson for event serialization
+    api 'com.fasterxml.jackson.core:jackson-databind'
+    api 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+    
+    // Validation API (domain-level validation)
+    api 'jakarta.validation:jakarta.validation-api'
+}
+
+// This is a library module, not a runnable application
+bootJar {
+    enabled = false
+}
+
+jar {
+    enabled = true
+}

@@ -1,0 +1,23 @@
+/*
+ * Build configuration for orders service
+ * Manages order lifecycle and order processing
+ */
+
+dependencies {
+    implementation project(':shared:common')
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-amqp'
+    runtimeOnly 'org.postgresql:postgresql'
+    runtimeOnly 'com.h2database:h2'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+}
+
+bootJar {
+    enabled = true
+    archiveFileName = 'orders-service.jar'
+}
+
+jar {
+    enabled = false
+}

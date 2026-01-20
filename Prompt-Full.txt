@@ -1,0 +1,898 @@
+
+##################################### Prompt 1 ################################################
+
+Act as a principal software architect and backend bootstrapper.
+
+Goal:
+Initialize a new backend monorepo from scratch using Spring Boot 3.x, Java 21, and Gradle 8.11, following strict hexagonal architecture (Ports & Adapters) and preparing the repository for GitHub Copilot–assisted development.
+
+Hard constraints (do not violate):
+- Java version: 21
+- Spring Boot: 3.x (latest stable)
+- Build tool: Gradle 8.11
+- Gradle Wrapper: REQUIRED
+- Local Gradle distribution path: D:\E-drive-Software\gradle-8.11
+- Repository type: Monorepo
+- Architecture style: Hexagonal
+- Build scripts: build.gradle (Groovy DSL only)
+- Config files: application.properties (NOT YAML)
+- Base package: com.konasl
+- Backend-only repository
+
+Execution tasks (perform in order):
+
+1) Initialize Gradle monorepo root
+- Create:
+  - settings.gradle
+  - root build.gradle
+  - gradle/wrapper/*
+- Configure Gradle Wrapper to:
+  - Reference Gradle 8.11
+  - Include BOTH:
+    a) Local distribution path (ACTIVE)
+    b) Global distribution URL (COMMENTED OUT for now)
+- Do not remove the commented global distribution; document why it exists
+
+2) Create top-level repository structure
+- Create directories:
+  - services/
+  - docs/
+  - .github/
+
+3) Create initial Spring Boot service module
+Inside `services/`, create a module named:
+- sample-service
+
+Module requirements:
+- Gradle subproject with its own build.gradle
+- Spring Boot 3.x application
+- Java base package: com.konasl.sampleservice
+
+Source layout MUST reflect hexagonal architecture:
+src/main/java/com/konasl/sampleservice/
+- domain/              (pure Java, no Spring, no persistence)
+- application/         (use cases, ports, orchestration)
+- adapters/
+  - inbound/            (REST, messaging, controllers)
+  - outbound/           (DB, external APIs, messaging)
+- infrastructure/      (Spring Boot config, wiring, bootstrapping)
+
+Rules:
+- Domain layer must not depend on Spring, JPA, or any framework
+- Controllers must be thin and delegate to application layer
+- Adapters depend inward only
+- Infrastructure wires everything together
+
+4) Create GitHub Copilot skill and instruction structure
+At repository root, create:
+.github/
+- copilot-instructions.md
+- skills/
+- instructions/
+- prompts/
+- agents/
+
+5) Populate Copilot instruction files (inspired by awesome-copilot)
+Using concepts from:
+https://github.com/github/awesome-copilot
+
+Create and adapt the following files:
+- .github/instructions/java.instructions.md
+- .github/instructions/springboot.instructions.md
+
+Adapt content so it enforces:
+- Java 21 best practices
+- Spring Boot usage restricted to adapters and infrastructure
+- Hexagonal boundaries are mandatory
+- No shortcut violations (no “just make it work” code)
+
+Do NOT copy unrelated languages or frontend instructions.
+
+6) Documentation
+Create minimal but clear documentation:
+- README.md
+  - Monorepo overview
+  - Module layout
+  - Architecture summary
+- docs/ARCHITECTURE.md
+  - Explanation of hexagonal architecture
+  - Layer responsibilities
+  - Dependency rules
+- docs/DECISIONS.md
+  - Initial architectural decisions (ADR-style, concise)
+
+General execution rules:
+- Create files and folders directly in the workspace
+- Prefer correctness and architectural clarity over feature completeness
+- If something is ambiguous, choose the industry-standard option and proceed
+- Do not ask questions unless execution is blocked
+
+Begin by creating the directory structure and Gradle configuration first.
+
+
+
+##################################### Prompt 2 ################################################
+Write the files to the skills directory, so that we can add extra commands during code generation. 
+As an example, 
+1. I want to write a error log in everywhere when an exception is happen or any error is occurs throughout the project.
+2. I also want to use enums when there is any list of constant value.
+3. I also want to use error message from a specific file. So that I provide multiple language support by replacing the content of the error message. the key will be the same but according to the configuration the error message language different message will be provided.
+4. There sould be no magic value in the project.
+
+##################################### Prompt 2 -----Actual ################################################
+Act as a senior backend architect defining reusable GitHub Copilot skills.
+
+Goal:
+Create Copilot skill files that enforce cross-cutting coding rules and conventions across the entire Spring Boot monorepo.
+
+Context:
+- Language: Java 21
+- Framework: Spring Boot 3.x
+- Architecture: Hexagonal
+- Repository: Monorepo
+- These skills must influence future code generation decisions
+
+Tasks:
+
+1) Create skill files
+Inside the repository root, write the following files under:
+.github/skills/
+
+Create one skill per concern (do NOT merge them):
+
+- logging.skill.md
+- error-handling.skill.md
+- constants-and-enums.skill.md
+- localization.skill.md
+- no-magic-values.skill.md
+
+2) Skill requirements (very important)
+
+Each skill file must:
+- Clearly describe the rule
+- Explain when it applies
+- Explain what is forbidden
+- Provide small Java-oriented examples (concise, not verbose)
+- Be written as enforceable guidance, not documentation prose
+
+3) Logging skill
+In `logging.skill.md`, enforce:
+- Error logs must be written whenever:
+  - An exception is caught
+  - An error condition is detected
+- Use structured logging (placeholders, not string concatenation)
+- Log context (request id, entity id, use case name) when available
+- No swallowing of exceptions without logging
+
+4) Error handling skill
+In `error-handling.skill.md`, enforce:
+- Centralized exception handling
+- Domain exceptions separated from technical exceptions
+- No generic RuntimeException usage in business logic
+- Errors must be meaningful and traceable
+
+5) Constants and enums skill
+In `constants-and-enums.skill.md`, enforce:
+- Enums must be used for any finite set of values
+- No duplicated string or numeric constants
+- Constants must be named, typed, and centrally defined
+- Enums belong in domain or application layer depending on meaning
+
+6) Localization skill
+In `localization.skill.md`, enforce:
+- Error messages must come from message/resource files
+- Message keys must remain stable across languages
+- Language selection must be configuration-driven
+- No hardcoded user-facing messages in Java code
+
+7) No-magic-values skill
+In `no-magic-values.skill.md`, enforce:
+- No hardcoded literals with business meaning
+- Thresholds, limits, codes, and identifiers must be named constants
+- Configuration values must be externalized
+- Tests may use literals only when explicitly justified
+
+8) Tone and intent
+- These skills must guide code generation decisions
+- They must prevent shortcuts
+- They must align with enterprise-grade backend standards
+
+Execution rules:
+- Write the files directly into .github/skills/
+- Do not ask questions
+- Do not generate application code
+- Focus only on defining skills
+
+Proceed with creating the skill files now.
+
+
+##################################### Prompt 3 -----Actual ################################################
+
+Act as a principal software architect designing a production-grade distributed backend platform.
+
+Goal:
+Prepare the architectural foundation for a DDD + CQRS + Event Sourcing–based Spring Boot monorepo, aligned with the Distributed System with AI Hackathon requirements.
+
+Context:
+- Java 21
+- Spring Boot 3.x
+- Gradle 8.11
+- Hexagonal architecture
+- Monorepo
+- Base package: com.konasl
+- Messaging: RabbitMQ
+- Persistence: event-sourced write model + read projections
+- Reliability: Outbox Pattern
+
+Tasks (execute in order):
+
+1) Define bounded-context layout
+Under `services/`, create placeholder service modules for each bounded context:
+- user-access
+- customer-profile
+- catalog
+- pricing
+- inventory
+- cart
+- orders
+- payments
+- fulfillment
+- support
+
+Each service must:
+- Be an independent Spring Boot module
+- Follow hexagonal architecture
+- Have its own domain, application, adapters, infrastructure packages
+
+2) Establish CQRS + Event Sourcing core abstractions
+At the platform level (shared module or shared package), define ONLY interfaces and base abstractions for:
+- Command
+- CommandHandler<C>
+- Query
+- QueryHandler<Q, R>
+- DomainEvent (versioned)
+- AggregateRoot
+- EventStore
+- Snapshot (optional)
+- UnitOfWork
+- OutboxRepository
+- OutboxEvent
+
+Rules:
+- No framework dependencies in domain abstractions
+- Use generics where appropriate
+- No service-locator pattern
+- All dependencies must be injectable
+
+3) Define event sourcing rules
+- Aggregate state must be rebuilt from events
+- Aggregates must emit domain events for every state change
+- No direct state mutation without an event
+- Persist events and outbox records atomically
+
+4) Messaging & outbox setup
+- Define RabbitMQ integration interfaces
+- Define an Outbox dispatcher (polling-based)
+- Events must be:
+  - Versioned
+  - Serializable
+  - Backward-compatible
+- Consumers must be idempotent
+
+5) Documentation
+Create or update:
+- docs/ARCHITECTURE.md
+  - DDD, CQRS, Event Sourcing overview
+  - Aggregate boundaries
+  - Command vs Query model
+  - Event flow and outbox pattern
+- docs/DECISIONS.md
+  - Why event sourcing
+  - Why RabbitMQ
+  - Why hexagonal architecture
+
+Execution rules:
+- Create only structural code and interfaces
+- Do NOT implement business logic
+- Do NOT create REST controllers yet
+- Prefer clarity and correctness over completeness
+- Enforce boundaries strictly
+
+Begin with bounded-context module structure, then core abstractions.
+
+
+
+##################################### Prompt 4 -----Actual ################################################
+
+Act as a senior backend engineer implementing bounded contexts using DDD + CQRS + Event Sourcing.
+
+Goal:
+Scaffold the MVP business subsystems for an e-commerce platform using the existing architectural foundation.
+
+Context:
+- Follow previously defined CQRS, Event Sourcing, and Outbox abstractions
+- Respect hexagonal architecture
+- Use enums, domain events, and value objects
+- Apply Copilot skills: logging, error handling, localization, no magic values
+
+Subsystems to scaffold (MVP level):
+
+1) User & Admin Access
+- Customer signup/login
+- Admin login
+- Roles: Customer, Admin
+
+2) Customer Profile
+- Minimal profile
+- Address CRUD
+- Default address
+
+3) Catalog
+- Product aggregate
+- Publish/unpublish
+- Category (single)
+- Image URL
+
+4) Pricing
+- One price per product
+- Single currency
+- Price shown via read model
+
+5) Inventory
+- Stock per product
+- Reservation on order placement
+- Release on cancel/payment failure
+- Prevent overselling
+
+6) Cart
+- One active cart per customer
+- Add/remove/update items
+- Totals via pricing
+- Availability via inventory
+
+7) Orders
+- Place order from cart
+- Statuses: PendingPayment, Confirmed, Cancelled
+- Customer/Admin views
+
+8) Payments
+- Cash on Delivery OR simple online payment
+- Payment success/failure events
+
+9) Fulfillment
+- Shipment creation after confirmation
+- Statuses: ReadyToShip, Shipped, Delivered
+- Tracking number
+
+10) Support
+- Ticket per order
+- Statuses: Open, Resolved
+- Messages/notes
+
+Implementation rules:
+- Each subsystem:
+  - Has its own Aggregate Roots
+  - Emits domain events for state changes
+  - Uses commands for writes, queries for reads
+- Read models must be eventually consistent
+- No cross-context direct calls; use events
+- No business logic in controllers
+- No persistence logic in domain
+
+Output expectations:
+- Aggregate definitions
+- Commands and handlers
+- Domain events
+- Basic read model projections
+- Minimal REST adapters for commands and queries
+
+Do NOT:
+- Optimize prematurely
+- Skip event emission
+- Hardcode business rules
+- Collapse bounded contexts
+
+Proceed subsystem by subsystem, starting with Catalog → Inventory → Cart → Orders.
+
+
+##################################### Prompt 5 -----Actual ################################################
+
+
+Act as a senior backend engineer validating end-to-end success scenarios
+in a DDD + CQRS + Event Sourcing system.
+
+Goal:
+Implement and verify a steady, happy-path business flow across bounded contexts,
+ensuring correct event propagation, state transitions, and read-model consistency.
+
+Context:
+- Java 21
+- Spring Boot 3.x
+- Hexagonal architecture
+- DDD + CQRS + Event Sourcing
+- RabbitMQ + Outbox pattern
+- Follow all existing Copilot skills:
+  - logging
+  - error handling
+  - localization
+  - enums for finite values
+  - no magic values
+
+Scope:
+ONLY success scenarios.
+NO failure, retry, compensation, or chaos testing in this prompt.
+
+Tasks (execute in business order):
+
+1) User creation
+- Create a Customer user via User Access context
+- Emit UserCreated event
+- Build a read model for customer listing
+
+2) Product onboarding
+- Create and publish a Product in Catalog
+- Emit ProductCreated and ProductPublished events
+- Product must be visible in catalog read model
+
+3) Pricing
+- Set a price for the product in Pricing context
+- Emit PriceSet event
+- Query price via read model
+- Ensure price is used by downstream contexts (cart, orders)
+
+4) Cart operations
+- Create or fetch active cart for customer
+- Add product to cart
+- Change quantity
+- Remove and re-add item
+- Cart totals must be calculated via Pricing read model
+- Emit CartUpdated events
+
+5) Order placement
+- Place order from cart
+- Emit OrderPlaced event
+- Order status starts as PendingPayment
+- Create Order aggregate from cart snapshot
+
+6) Inventory reservation
+- Reserve stock when OrderPlaced is consumed
+- Emit StockReserved event
+- Reservation tied to order id
+- Inventory read model reflects reserved quantity
+
+7) Order totals
+- Order total must match pricing calculation
+- No duplication of pricing logic
+- Total must be queryable from order read model
+
+8) Order views
+- Customer can:
+  - List orders
+  - View order details
+- Read model must be eventually consistent but correct
+
+9) Payment
+- Perform payment (happy path)
+- Emit PaymentSuccessful event
+- Update order status to Confirmed
+- Persist events atomically via outbox
+
+10) Fulfillment
+- Create shipment after order confirmation
+- Emit ShipmentCreated and ShipmentShipped events
+- Attach tracking number
+- Shipment status transitions correctly
+
+11) Status checks
+- Customer can query:
+  - Order status
+  - Payment status
+  - Shipment status
+- Data must come from read models, not aggregates
+
+12) Review
+- Allow customer to add a review for delivered order
+- Emit ReviewAdded event
+- Review visible in product read model
+
+Verification rules:
+- Every state change must correspond to a domain event
+- No direct cross-context calls
+- No business logic in controllers
+- Logs must exist for each step (info for success, error-ready)
+- Use enums for statuses (OrderStatus, PaymentStatus, ShipmentStatus)
+- All user-facing messages must use localization keys
+
+Output expectations:
+- Minimal REST endpoints to trigger the flow
+- Command and query handlers invoked in sequence
+- Events published and consumed correctly
+- Read models updated accordingly
+- No shortcuts or mocked logic unless explicitly documented
+
+Do NOT:
+- Introduce failure handling
+- Skip event emission
+- Hardcode values
+- Bypass CQRS separation
+
+Proceed step by step, validating the steady success flow end-to-end.
+
+
+##################################### Prompt 6 -----Actual ################################################
+
+
+# Prompt: Act as a senior backend engineer Complete End-to-End Implementation for DDD+CQRS+ES E-Commerce Platform
+
+## Context
+
+You are working on a Java 21 + Spring Boot 3.4.1 backend monorepo implementing Domain-Driven Design (DDD), Command Query Responsibility Segregation (CQRS), and Event Sourcing (ES) patterns with Hexagonal Architecture.
+
+**Current State:**
+- ✅ Catalog bounded context: FULLY COMPLETE (reference implementation)
+- ✅ Domain models created for: User Access, Pricing, Cart, Orders, Payments, Fulfillment
+- ⏳ Inventory bounded context: Domain layer complete, needs application/adapter/infrastructure
+- ❌ All new contexts have REST controllers with TODO comments - handlers not wired
+
+**Base Package:** com.konasl
+**Architecture:** Hexagonal (Domain → Application → Adapters → Infrastructure)
+**Patterns:** CQRS, Event Sourcing, Outbox Pattern
+**MVP Persistence:** In-memory (H2 database, Spring ApplicationEventPublisher)
+
+## Objective
+
+Complete the implementation of all bounded contexts to enable the full end-to-end happy path flow:
+1. User creation → 2. Product creation → 3. Product publishing → 4. Price setting → 
+5. Add to cart → 6. Place order → 7. Process payment → 8. Confirm order → 
+9. Create shipment → 10. Complete fulfillment
+
+## Tasks to Complete
+
+### Phase 1: Complete Inventory Bounded Context
+
+**Location:** `services/inventory/`
+
+**Missing Components:**
+
+#### 1.1 Application Layer Commands & Handlers
+Create in `application/command/`:
+- `InitializeStockCommand` (productId, initialQuantity, lowStockThreshold)
+- `ReserveStockCommand` (stockId, productId, reservationId, quantity)
+- `ReleaseReservationCommand` (stockId, reservationId)
+- `ConfirmReservationCommand` (stockId, reservationId)
+- `ReplenishStockCommand` (stockId, quantity)
+
+Create in `application/handler/`:
+- `InitializeStockCommandHandler` - Creates new Stock aggregate, saves events
+- `ReserveStockCommandHandler` - Loads Stock, calls reserve(), saves events
+- `ReleaseReservationCommandHandler` - Loads Stock, calls release(), saves events
+- `ConfirmReservationCommandHandler` - Loads Stock, calls confirm(), saves events
+- `ReplenishStockCommandHandler` - Loads Stock, calls replenish(), saves events
+
+#### 1.2 Application Layer Queries & Handlers
+Create in `application/query/`:
+- `GetStockQuery` (productId) returns `StockDto`
+- `StockDto` (productId, availableQuantity, reservedQuantity, totalQuantity, status)
+
+Create in `application/handler/`:
+- `GetStockQueryHandler` - Queries read repository, returns StockDto
+
+#### 1.3 Application Layer Ports
+Create in `application/port/`:
+- `StockEventStore extends EventStore<Stock>`
+- `InventoryOutboxRepository extends OutboxRepository`
+- `StockReadRepository` with methods: `Optional<StockDto> findByProductId(String)`
+
+#### 1.4 Adapter Layer - Inbound REST
+Create in `adapters/inbound/rest/`:
+- `StockCommandController` - POST endpoints for all commands
+  - POST `/api/inventory/stock` - Initialize stock
+  - POST `/api/inventory/stock/{stockId}/reserve` - Reserve stock
+  - POST `/api/inventory/stock/{stockId}/release` - Release reservation
+  - POST `/api/inventory/stock/{stockId}/confirm` - Confirm reservation
+  - POST `/api/inventory/stock/{stockId}/replenish` - Replenish stock
+
+- `StockQueryController` - GET endpoints
+  - GET `/api/inventory/products/{productId}/stock` - Get stock by product ID
+
+#### 1.5 Adapter Layer - Inbound Event Consumer
+Create in `adapters/inbound/event/`:
+- `OrderEventConsumer` - Listens to `OrderPlacedEvent` from Orders service
+  - Extracts order items
+  - Calls `ReserveStockCommandHandler` for each item
+  - Handles `InsufficientStockException`
+
+#### 1.6 Adapter Layer - Outbound Persistence
+Create in `adapters/outbound/persistence/`:
+- `InMemoryStockEventStore implements StockEventStore`
+  - ConcurrentHashMap storage
+  - save() and loadEvents() methods
+  
+- `InMemoryInventoryOutboxRepository implements InventoryOutboxRepository`
+  - ConcurrentHashMap storage
+  - save(), findPending(), markPublished() methods
+
+- `InMemoryStockReadRepository implements StockReadRepository`
+  - ConcurrentHashMap storage
+  - save() and findByProductId() methods
+
+- `StockReadModelProjection` - Event listener
+  - @EventListener for StockInitializedEvent
+  - @EventListener for StockReservedEvent
+  - @EventListener for ReservationReleasedEvent
+  - @EventListener for ReservationConfirmedEvent
+  - Updates read repository
+
+#### 1.7 Infrastructure Layer
+Create in `infrastructure/`:
+- `InventoryApplication.java` - Spring Boot main class
+- `config/DomainEventPublisher.java` - Implements EventPublisher using ApplicationEventPublisher
+
+Create `src/main/resources/application.properties`:
+```properties
+spring.application.name=inventory-service
+server.port=8087
+spring.datasource.url=jdbc:h2:mem:inventory
+logging.level.com.konasl.inventory=INFO
+
+Phase 2: Wire Handlers for Orders Bounded Context
+Location: services/orders/
+
+Existing: Domain model complete, REST controllers with TODOs
+
+Tasks:
+
+2.1 Application Layer Handlers
+Create in application/handler/:
+
+PlaceOrderCommandHandler implements CommandHandler<PlaceOrderCommand>
+
+Inject OrderEventStore, OutboxRepository
+Create Order aggregate with items
+Save events to event store
+Save events to outbox
+ConfirmOrderCommandHandler implements CommandHandler<ConfirmOrderCommand>
+
+Load Order from event store
+Call order.confirm()
+Save new events
+GetOrderQueryHandler implements QueryHandler<GetOrderQuery, OrderDto>
+
+Inject OrderReadRepository
+Return order DTO
+2.2 Application Layer Ports
+Create in application/port/:
+
+OrderEventStore extends EventStore<Order>
+OrdersOutboxRepository extends OutboxRepository
+OrderReadRepository with findById() and findByUserId()
+2.3 Adapter Layer Persistence
+Create in adapters/outbound/persistence/:
+
+InMemoryOrderEventStore
+InMemoryOrdersOutboxRepository
+InMemoryOrderReadRepository
+OrderReadModelProjection (listens to OrderPlaced, OrderConfirmed events)
+2.4 Adapter Layer Event Consumer
+Create in adapters/inbound/event/:
+
+PaymentEventConsumer - Listens to PaymentSuccessfulEvent
+Calls ConfirmOrderCommandHandler
+2.5 Infrastructure Config
+Create in infrastructure/config/:
+
+DomainEventPublisher
+Wire all beans in configuration classes
+2.6 Update Controllers
+In adapters/inbound/rest/OrderController.java:
+
+Inject CommandHandler and QueryHandler
+Replace TODO comments with actual handler calls
+Add proper error handling
+Phase 3: Wire Handlers for Payments Bounded Context
+Location: services/payments/
+
+Tasks:
+
+3.1 Application Layer
+ProcessPaymentCommandHandler - Creates Payment aggregate, saves events
+GetPaymentQueryHandler - Returns PaymentDto from read repository
+3.2 Ports
+PaymentEventStore
+PaymentsOutboxRepository
+PaymentReadRepository
+3.3 Persistence
+InMemoryPaymentEventStore
+InMemoryPaymentsOutboxRepository
+InMemoryPaymentReadRepository
+PaymentReadModelProjection
+3.4 Infrastructure
+DomainEventPublisher
+Configuration classes
+3.5 Update Controller
+Wire handlers in PaymentController
+Phase 4: Wire Handlers for Fulfillment Bounded Context
+Location: services/fulfillment/
+
+Tasks:
+
+4.1 Application Layer
+CreateShipmentCommandHandler - Creates Shipment aggregate
+DispatchShipmentCommandHandler - Calls shipment.dispatch()
+GetShipmentQueryHandler - Returns ShipmentDto
+4.2 Ports
+ShipmentEventStore
+FulfillmentOutboxRepository
+ShipmentReadRepository
+4.3 Persistence
+InMemoryShipmentEventStore
+InMemoryFulfillmentOutboxRepository
+InMemoryShipmentReadRepository
+ShipmentReadModelProjection
+4.4 Event Consumer
+OrderEventConsumer - Listens to OrderConfirmedEvent, creates shipment
+4.5 Infrastructure
+DomainEventPublisher
+Configuration
+4.6 Update Controller
+Wire handlers in FulfillmentController
+Phase 5: Wire Handlers for Cart Bounded Context
+Location: services/cart/
+
+Tasks:
+
+5.1 Application Layer
+AddToCartCommandHandler
+RemoveFromCartCommandHandler (new command needed)
+GetCartQueryHandler
+5.2 Ports & Persistence
+CartEventStore
+CartOutboxRepository
+CartReadRepository
+Implementations + projection
+5.3 Update Controller
+Wire handlers
+Phase 6: Wire Handlers for Pricing Bounded Context
+Location: services/pricing/
+
+Tasks:
+
+6.1 Application Layer
+SetPriceCommandHandler
+GetPriceQueryHandler
+6.2 Event Consumer
+CatalogEventConsumer - Listens to ProductPublishedEvent, can auto-set default price
+6.3 Ports & Persistence
+Event store, outbox, read repository
+Implementations
+6.4 Update Controller
+Wire handlers
+Phase 7: Wire Handlers for User Access Bounded Context
+Location: services/user-access/
+
+Tasks:
+
+7.1 Application Layer
+CreateUserCommandHandler
+GetUserQueryHandler
+7.2 Ports & Persistence
+Event store, outbox, read repository
+Implementations
+7.3 Update Controller
+Wire handlers
+Implementation Guidelines
+Pattern to Follow (Use Catalog as Reference)
+Example Command Handler:
+
+@Service
+public class CreateOrderCommandHandler implements CommandHandler<CreateOrderCommand> {
+    
+    private final OrderEventStore eventStore;
+    private final OrdersOutboxRepository outboxRepository;
+    
+    @Transactional
+    @Override
+    public void handle(CreateOrderCommand command) {
+        // 1. Create aggregate
+        Order order = new Order(...);
+        
+        // 2. Save to event store
+        eventStore.save(order);
+        
+        // 3. Save to outbox
+        for (DomainEvent event : order.getUncommittedEvents()) {
+            outboxRepository.save(OutboxEvent.from(event));
+        }
+        
+        // 4. Clear uncommitted events
+        order.clearUncommittedEvents();
+    }
+}
+
+Example Query Handler:
+@Service
+public class GetOrderQueryHandler implements QueryHandler<GetOrderQuery, OrderDto> {
+    
+    private final OrderReadRepository repository;
+    
+    @Override
+    public OrderDto handle(GetOrderQuery query) {
+        return repository.findById(query.orderId())
+            .orElseThrow(() -> new NotFoundException("Order not found"));
+    }
+}
+
+Example Controller Update:
+// Before (TODO):
+// TODO: Wire to PlaceOrderCommandHandler
+
+// After:
+private final CommandHandler<PlaceOrderCommand> placeOrderHandler;
+
+@PostMapping
+public ResponseEntity<OrderResponse> placeOrder(@RequestBody PlaceOrderRequest request) {
+    var command = new PlaceOrderCommand(request.userId(), request.items());
+    placeOrderHandler.handle(command);
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(new OrderResponse(command.getCommandId(), "Order placed"));
+}
+
+Cross-Context Event Flow to Implement
+OrderPlaced → Inventory: Reserve stock
+PaymentSuccessful → Orders: Confirm order
+OrderConfirmed → Inventory: Confirm reservation
+OrderConfirmed → Fulfillment: Create shipment
+Testing After Each Phase
+After completing each bounded context:
+
+Start the service (check port in application.properties)
+Test POST endpoint (command)
+Test GET endpoint (query)
+Verify events in logs
+Verify read model updated
+Constraints
+NO business logic in controllers - delegate to handlers
+NO Spring annotations in domain/application layers
+USE constructor injection - no field injection
+FOLLOW Catalog implementation as reference
+LOG at INFO level for all business operations
+USE Java 21 features (records, pattern matching)
+Deliverables
+For each bounded context:
+
+✅ All command handlers implemented
+✅ All query handlers implemented
+✅ All ports (interfaces) defined
+✅ All adapter implementations (in-memory)
+✅ Event consumers for cross-context integration
+✅ Controllers wired with handlers
+✅ Infrastructure configuration complete
+✅ Service starts without errors
+✅ Manual testing via REST endpoints successful
+Success Criteria
+The E2E flow should work end-to-end:
+
+Create user → User appears in read model
+Create + publish product → Product appears in Catalog
+Set price → Price appears in Pricing
+Add to cart → Cart shows item
+Place order → Order created with PENDING_PAYMENT
+Process payment → Payment SUCCESSFUL
+Order confirmed → Order status = CONFIRMED
+Shipment created → Tracking number generated
+All events should be logged, and read models should be eventually consistent.
+
+Priority Order
+Inventory (blocking for stock reservation)
+Orders (core flow)
+Payments (triggers order confirmation)
+Fulfillment (triggered by order confirmation)
+Cart (user-facing)
+Pricing (supports cart/order)
+User Access (authentication context)
+Additional Notes
+Reference the Catalog implementation for patterns
+Use the E2E-TESTING-GUIDE.md for testing steps
+Follow hexagonal architecture strictly
+Keep MVP scope - in-memory persistence is acceptable
+Focus on happy path - error handling can be basic

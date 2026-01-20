@@ -1,0 +1,49 @@
+# Stop All Services Script
+# This script attempts to stop all running service windows
+
+Write-Host "==================================================================" -ForegroundColor Cyan
+Write-Host "  Stopping All Services" -ForegroundColor Cyan
+Write-Host "==================================================================" -ForegroundColor Cyan
+Write-Host ""
+
+# Find all PowerShell processes running Gradle bootRun
+$gradleProcesses = Get-Process powershell -ErrorAction SilentlyContinue | Where-Object {
+    $_.MainWindowTitle -like "Service:*"
+}
+
+if ($gradleProcesses.Count -eq 0) {
+    Write-Host "No running services found." -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "Note: This script only finds services started by run-all-services.ps1" -ForegroundColor Gray
+    exit 0
+}
+
+Write-Host "Found $($gradleProcesses.Count) running service(s):" -ForegroundColor Yellow
+foreach ($process in $gradleProcesses) {
+    Write-Host "  • $($process.MainWindowTitle) (PID: $($process.Id))" -ForegroundColor White
+}
+Write-Host ""
+
+$confirmation = Read-Host "Stop all services? (y/N)"
+
+if ($confirmation -ne 'y' -and $confirmation -ne 'Y') {
+    Write-Host "Cancelled." -ForegroundColor Yellow
+    exit 0
+}
+
+Write-Host ""
+Write-Host "Stopping services..." -ForegroundColor Cyan
+
+foreach ($process in $gradleProcesses) {
+    try {
+        Write-Host "  Stopping: $($process.MainWindowTitle)..." -ForegroundColor White
+        Stop-Process -Id $process.Id -Force
+        Write-Host "    ✓ Stopped" -ForegroundColor Green
+    } catch {
+        Write-Host "    ✗ Failed: $($_.Exception.Message)" -ForegroundColor Red
+    }
+}
+
+Write-Host ""
+Write-Host "All services stopped." -ForegroundColor Green
+Write-Host ""
