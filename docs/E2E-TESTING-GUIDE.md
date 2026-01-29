@@ -2,7 +2,71 @@
 
 ## Overview
 
-This document provides a step-by-step guide for testing the complete e-commerce happy path across all bounded contexts using DDD, CQRS, and Event Sourcing patterns.
+This document provides both automated and manual testing approaches for the complete e-commerce happy path across all bounded contexts using DDD, CQRS, and Event Sourcing patterns.
+
+## Automated Testing
+
+### Quick Start
+
+Run the automated test script to execute the complete happy path in a single run:
+
+**PowerShell:**
+```powershell
+.\test-e2e-happy-path.ps1
+```
+
+**Bash:**
+```bash
+chmod +x test-e2e-happy-path.sh
+./test-e2e-happy-path.sh
+```
+
+**With verbose output:**
+```powershell
+.\test-e2e-happy-path.ps1 -Verbose
+```
+
+```bash
+VERBOSE=true ./test-e2e-happy-path.sh
+```
+
+### What the Automated Test Does
+
+The script automatically:
+1. ✅ Checks that all 8 services are running and healthy
+2. ✅ Creates a test user
+3. ✅ Creates and publishes a product
+4. ✅ Sets product pricing
+5. ✅ Initializes inventory stock
+6. ✅ Adds product to shopping cart
+7. ✅ Reserves inventory stock
+8. ✅ Places an order
+9. ✅ Processes payment
+10. ✅ Confirms the order
+11. ✅ Creates shipment
+12. ✅ Dispatches shipment
+
+Each step validates the response and extracts IDs (userId, productId, orderId, etc.) for subsequent calls, providing a complete end-to-end validation of the happy path flow.
+
+### Test Output
+
+The script provides color-coded output:
+- 🟢 **Green checkmarks** for successful operations
+- 🔴 **Red X marks** for failures
+- 🟡 **Yellow** for test step headers
+- 🔵 **Cyan** for section headers
+
+Example output:
+```
+================================================================
+  STEP 1: Create User (User Access Service)
+================================================================
+
+  ✓ User created successfully
+  User ID: 550e8400-e29b-41d4-a716-446655440000
+```
+
+## Manual Testing Guide
 
 ## Architecture Summary
 

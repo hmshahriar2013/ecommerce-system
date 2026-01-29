@@ -38,9 +38,12 @@ public class InitializeStockCommandHandler implements CommandHandler<InitializeS
         logger.info("Initializing stock for product: {} with quantity: {}",
                 command.productId(), command.initialQuantity());
 
+        // Use productId as stockId for simplicity (one stock per product)
+        StockId stockId = StockId.of(command.productId());
+
         // Create new Stock aggregate
         Stock stock = new Stock(
-                StockId.generate(),
+                stockId,
                 ProductId.of(command.productId()),
                 command.initialQuantity(),
                 "system");
@@ -59,7 +62,8 @@ public class InitializeStockCommandHandler implements CommandHandler<InitializeS
         // Mark events as committed
         stock.markEventsAsCommitted();
 
-        logger.info("Stock initialized successfully for product: {}", command.productId());
+        logger.info("Stock initialized successfully for product: {} with stockId: {}",
+                command.productId(), stockId.value());
     }
 
     @Override

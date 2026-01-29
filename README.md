@@ -162,29 +162,64 @@ D:\E-drive-Software\gradle-8.11\bin\gradle.bat :services:catalog:bootRun --no-da
 
 Wait 30-60 seconds for services to start, then test:
 
+#### Automated End-to-End Testing
+
+Run the complete happy path test in a single command:
+
+```powershell
+# PowerShell
+.\test-e2e-happy-path.ps1
+
+# With verbose output
+.\test-e2e-happy-path.ps1 -Verbose
+```
+
+```bash
+# Bash
+chmod +x test-e2e-happy-path.sh
+./test-e2e-happy-path.sh
+
+# With verbose output
+VERBOSE=true ./test-e2e-happy-path.sh
+```
+
+The automated test will:
+- ✅ Check all services are healthy
+- ✅ Execute the complete happy path flow (12 steps)
+- ✅ Validate each API response
+- ✅ Report success/failure with color-coded output
+
+See [E2E-TESTING-GUIDE.md](docs/E2E-TESTING-GUIDE.md) for details.
+
+#### Manual API Testing
+
 ```bash
 # Health checks
+curl http://localhost:8080/actuator/health  # User Access
 curl http://localhost:8081/actuator/health  # Catalog
+curl http://localhost:8082/actuator/health  # Pricing
 curl http://localhost:8083/actuator/health  # Cart
+curl http://localhost:8084/actuator/health  # Orders
+curl http://localhost:8085/actuator/health  # Payments
+curl http://localhost:8086/actuator/health  # Fulfillment
+curl http://localhost:8087/actuator/health  # Inventory
 
-# Create a product (Catalog Service)
-curl -X POST http://localhost:8081/api/v1/products \
+# Create a user (User Access Service)
+curl -X POST http://localhost:8080/api/users \
   -H "Content-Type: application/json" \
   -d '{
-    "name": "Sample Product",
-    "description": "A test product",
-    "price": 99.99
+    "email": "customer@example.com",
+    "fullName": "John Doe",
+    "role": "CUSTOMER"
   }'
 
-# Add item to cart (Cart Service)
-curl -X POST http://localhost:8083/api/v1/cart/add \
+# Create a product (Catalog Service)
+curl -X POST http://localhost:8081/api/catalog/products \
   -H "Content-Type: application/json" \
   -d '{
-    "cartId": "cart-123",
-    "productId": "prod-456",
-    "quantity": 2,
-    "price": 99.99,
-    "currency": "USD"
+    "name": "Premium Laptop",
+    "description": "High-performance laptop",
+    "sku": "LAPTOP-001"
   }'
 ```
 

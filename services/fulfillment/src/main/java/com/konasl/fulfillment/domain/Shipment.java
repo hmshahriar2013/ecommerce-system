@@ -55,19 +55,23 @@ public class Shipment extends AggregateRoot {
     /**
      * Dispatches the shipment (changes status to SHIPPED).
      */
-    public void dispatch(String dispatchedBy) {
+    public void dispatch(String carrier, String trackingNumber, String dispatchedBy) {
         if (status != ShipmentStatus.READY_TO_SHIP) {
             throw new IllegalStateException("Can only dispatch shipments in READY_TO_SHIP status");
         }
 
+        // Update tracking number
+        this.trackingNumber = trackingNumber;
+
         raiseEvent(new ShipmentDispatchedEvent(
                 UUID.randomUUID().toString(),
                 shipmentId.value(),
-                shipmentId.value(),
+                trackingNumber,
                 Instant.now(),
                 dispatchedBy));
 
-        logger.info("Shipment dispatched: {}", shipmentId.value());
+        logger.info("Shipment dispatched: {} with tracking: {}, carrier: {}",
+                shipmentId.value(), trackingNumber, carrier);
     }
 
     /**

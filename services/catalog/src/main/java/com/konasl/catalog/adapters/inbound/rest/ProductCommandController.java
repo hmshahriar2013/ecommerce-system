@@ -25,67 +25,70 @@ import java.util.UUID;
 @RequestMapping("/api/catalog/products")
 public class ProductCommandController {
 
-    private static final Logger logger = LoggerFactory.getLogger(ProductCommandController.class);
+        private static final Logger logger = LoggerFactory.getLogger(ProductCommandController.class);
 
-    private final CreateProductCommandHandler createHandler;
-    private final PublishProductCommandHandler publishHandler;
+        private final CreateProductCommandHandler createHandler;
+        private final PublishProductCommandHandler publishHandler;
 
-    public ProductCommandController(CreateProductCommandHandler createHandler,
-            PublishProductCommandHandler publishHandler) {
-        this.createHandler = createHandler;
-        this.publishHandler = publishHandler;
-    }
+        public ProductCommandController(CreateProductCommandHandler createHandler,
+                        PublishProductCommandHandler publishHandler) {
+                this.createHandler = createHandler;
+                this.publishHandler = publishHandler;
+        }
 
-    @PostMapping
-    public ResponseEntity<ProductResponse> createProduct(@RequestBody CreateProductRequest request) {
-        logger.info("Creating product: {}", request.name());
+        @PostMapping
+        public ResponseEntity<ProductResponse> createProduct(@RequestBody CreateProductRequest request) {
+                logger.info("Creating product: {}", request.name());
 
-        String productId = UUID.randomUUID().toString();
-        CreateProductCommand command = new CreateProductCommand(
-                productId,
-                request.name(),
-                request.description(),
-                request.category(),
-                request.imageUrl(),
-                "system" // TODO: Get from security context
-        );
+                String productId = UUID.randomUUID().toString();
+                CreateProductCommand command = new CreateProductCommand(
+                                productId,
+                                request.name(),
+                                request.description(),
+                                request.category() != null ? request.category() : "GENERAL",
+                                request.imageUrl() != null ? request.imageUrl() : "",
+                                "system" // TODO: Get from security context
+                );
 
-        createHandler.handle(command);
+                createHandler.handle(command);
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(new ProductResponse(productId, "Product created successfully"));
-    }
+                return ResponseEntity
+                                .status(HttpStatus.CREATED)
+                                .body(new ProductResponse(productId, "Product created successfully"));
+        }
 
-    @PostMapping("/{productId}/publish")
-    public ResponseEntity<ProductResponse> publishProduct(@PathVariable String productId) {
-        logger.info("Publishing product: {}", productId);
+        @PostMapping("/{productId}/publish")
+        public ResponseEntity<ProductResponse> publishProduct(@PathVariable String productId) {
+                logger.info("Publishing product: {}", productId);
 
-        PublishProductCommand command = new PublishProductCommand(
-                productId,
-                "system" // TODO: Get from security context
-        );
+                PublishProductCommand command = new PublishProductCommand(
+                                productId,
+                                "system" // TODO: Get from security context
+                );
 
-        publishHandler.handle(command);
+                publishHandler.handle(command);
 
-        return ResponseEntity.ok(new ProductResponse(productId, "Product published successfully"));
-    }
+                return ResponseEntity.ok(new ProductResponse(productId, "Product published successfully"));
+        }
 
-    /**
-     * Request DTO for creating a product.
-     */
-    public record CreateProductRequest(
-            String name,
-            String description,
-            String category,
-            String imageUrl) {
-    }
+        /**
+         * Request DTO for creating a product.
+         * Optional fields: category (defaults to "GENERAL"), imageUrl (defaults to ""),
+         * sku
+         */
+        public record CreateProductRequest(
+                        String name,
+                        String description,
+                        String category,
+                        String imageUrl,
+                        String sku) {
+        }
 
-    /**
-     * Response DTO for product operations.
-     */
-    public record ProductResponse(
-            String productId,
-            String message) {
-    }
+        /**
+         * Response DTO for product operations.
+         */
+        public record ProductResponse(
+                        String productId,
+                        String message) {
+        }
 }

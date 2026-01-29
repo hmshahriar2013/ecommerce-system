@@ -42,9 +42,12 @@ public class CreateShipmentCommandHandler implements CommandHandler<CreateShipme
     public void handle(CreateShipmentCommand command) {
         logger.info("Creating shipment for order: {}", command.orderId());
 
+        // Use orderId as shipmentId for simplicity (one shipment per order)
+        ShipmentId shipmentId = ShipmentId.of(command.orderId());
+
         // Create new shipment using domain model
         Shipment shipment = new Shipment(
-                ShipmentId.generate(),
+                shipmentId,
                 OrderId.of(command.orderId()),
                 "system");
 
@@ -69,7 +72,7 @@ public class CreateShipmentCommandHandler implements CommandHandler<CreateShipme
 
         shipment.markEventsAsCommitted();
 
-        logger.info("Shipment created with ID: {}", shipment.getShipmentId());
+        logger.info("Shipment created with ID: {} for order: {}", shipmentId.value(), command.orderId());
     }
 
     @Override

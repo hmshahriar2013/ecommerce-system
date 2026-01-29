@@ -38,13 +38,14 @@ public class DispatchShipmentCommandHandler implements CommandHandler<DispatchSh
 
     @Override
     public void handle(DispatchShipmentCommand command) {
-        logger.info("Dispatching shipment: {}", command.getShipmentId());
+        logger.info("Dispatching shipment: {} with carrier: {}",
+                command.getShipmentId(), command.getCarrier());
 
         // Load shipment from events
         Shipment shipment = eventStore.load(command.getShipmentId());
 
-        // Dispatch shipment
-        shipment.dispatch("system");
+        // Dispatch shipment with carrier and tracking info
+        shipment.dispatch(command.getCarrier(), command.getTrackingNumber(), "system");
 
         // Save events
         List<DomainEvent> events = shipment.getUncommittedEvents();
@@ -67,7 +68,8 @@ public class DispatchShipmentCommandHandler implements CommandHandler<DispatchSh
 
         shipment.markEventsAsCommitted();
 
-        logger.info("Shipment dispatched: {}", command.getShipmentId());
+        logger.info("Shipment dispatched: {} with tracking: {}",
+                command.getShipmentId(), command.getTrackingNumber());
     }
 
     @Override

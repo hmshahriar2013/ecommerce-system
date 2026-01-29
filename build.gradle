@@ -12,8 +12,12 @@ plugins {
 // Apply configuration to all subprojects
 subprojects {
     apply plugin: 'java'
-    apply plugin: 'org.springframework.boot'
-    apply plugin: 'io.spring.dependency-management'
+    
+    // Only apply Spring Boot and dependency management to service modules (not to parent 'services' or 'shared' projects)
+    if (project.name != 'performance-test' && project.name != 'services' && project.name != 'shared') {
+        apply plugin: 'org.springframework.boot'
+        apply plugin: 'io.spring.dependency-management'
+    }
 
     group = 'com.konasl'
     version = '0.0.1-SNAPSHOT'
@@ -40,11 +44,23 @@ subprojects {
         annotationProcessor 'org.projectlombok:lombok'
 
         // Testing dependencies
-        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        if (project.name != 'performance-test') {
+            testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        }
         testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     }
 
     tasks.named('test') {
         useJUnitPlatform()
+    }
+
+    // Configure JVM args for bootRun task - Optimized for low memory
+    tasks.matching { it.name == 'bootRun' }.configureEach {
+        jvmArgs '-Xms128m', '-Xmx512m',
+                '-XX:MaxMetaspaceSize=256m',
+                '-XX:ReservedCodeCacheSize=128m',
+                '-XX:+UseG1GC',
+                '-XX:MaxGCPauseMillis=200',
+                '-XX:+UseStringDeduplication'
     }
 }

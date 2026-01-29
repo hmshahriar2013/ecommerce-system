@@ -19,92 +19,92 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/fulfillment")
 public class FulfillmentController {
 
-    private static final Logger logger = LoggerFactory.getLogger(FulfillmentController.class);
+        private static final Logger logger = LoggerFactory.getLogger(FulfillmentController.class);
 
-    private final CommandHandler<CreateShipmentCommand> createShipmentHandler;
-    private final CommandHandler<DispatchShipmentCommand> dispatchShipmentHandler;
-    private final QueryHandler<GetShipmentQuery, ShipmentDto> getShipmentHandler;
+        private final CommandHandler<CreateShipmentCommand> createShipmentHandler;
+        private final CommandHandler<DispatchShipmentCommand> dispatchShipmentHandler;
+        private final QueryHandler<GetShipmentQuery, ShipmentDto> getShipmentHandler;
 
-    public FulfillmentController(
-            CommandHandler<CreateShipmentCommand> createShipmentHandler,
-            CommandHandler<DispatchShipmentCommand> dispatchShipmentHandler,
-            QueryHandler<GetShipmentQuery, ShipmentDto> getShipmentHandler) {
-        this.createShipmentHandler = createShipmentHandler;
-        this.dispatchShipmentHandler = dispatchShipmentHandler;
-        this.getShipmentHandler = getShipmentHandler;
-    }
+        public FulfillmentController(
+                        CommandHandler<CreateShipmentCommand> createShipmentHandler,
+                        CommandHandler<DispatchShipmentCommand> dispatchShipmentHandler,
+                        QueryHandler<GetShipmentQuery, ShipmentDto> getShipmentHandler) {
+                this.createShipmentHandler = createShipmentHandler;
+                this.dispatchShipmentHandler = dispatchShipmentHandler;
+                this.getShipmentHandler = getShipmentHandler;
+        }
 
-    @PostMapping("/shipments")
-    public ResponseEntity<ShipmentResponse> createShipment(@RequestBody CreateShipmentRequest request) {
-        logger.info("Creating shipment for order: {}", request.orderId());
+        @PostMapping("/shipments")
+        public ResponseEntity<ShipmentResponse> createShipment(@RequestBody CreateShipmentRequest request) {
+                logger.info("Creating shipment for order: {}", request.orderId());
 
-        var command = new CreateShipmentCommand(request.orderId());
-        createShipmentHandler.handle(command);
+                var command = new CreateShipmentCommand(request.orderId());
+                createShipmentHandler.handle(command);
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(new ShipmentResponse(
-                        command.getCommandId(),
-                        "TBD",
-                        "READY_TO_SHIP",
-                        "Shipment created"));
-    }
+                return ResponseEntity
+                                .status(HttpStatus.CREATED)
+                                .body(new ShipmentResponse(
+                                                request.orderId(), // Use orderId as shipmentId
+                                                "TBD",
+                                                "READY_TO_SHIP",
+                                                "Shipment created"));
+        }
 
-    @PostMapping("/shipments/{shipmentId}/dispatch")
-    public ResponseEntity<ShipmentResponse> dispatchShipment(
-            @PathVariable String shipmentId,
-            @RequestBody DispatchShipmentRequest request) {
+        @PostMapping("/shipments/{shipmentId}/dispatch")
+        public ResponseEntity<ShipmentResponse> dispatchShipment(
+                        @PathVariable String shipmentId,
+                        @RequestBody DispatchShipmentRequest request) {
 
-        logger.info("Dispatching shipment: {}", shipmentId);
+                logger.info("Dispatching shipment: {}", shipmentId);
 
-        var command = new DispatchShipmentCommand(
-                shipmentId,
-                request.carrier(),
-                request.trackingNumber());
+                var command = new DispatchShipmentCommand(
+                                shipmentId,
+                                request.carrier(),
+                                request.trackingNumber());
 
-        dispatchShipmentHandler.handle(command);
+                dispatchShipmentHandler.handle(command);
 
-        return ResponseEntity.ok(new ShipmentResponse(
-                shipmentId,
-                request.trackingNumber(),
-                "SHIPPED",
-                "Shipment dispatched"));
-    }
+                return ResponseEntity.ok(new ShipmentResponse(
+                                shipmentId,
+                                request.trackingNumber(),
+                                "SHIPPED",
+                                "Shipment dispatched"));
+        }
 
-    @GetMapping("/shipments/{shipmentId}")
-    public ResponseEntity<ShipmentDetailResponse> getShipment(@PathVariable String shipmentId) {
-        logger.debug("Getting shipment: {}", shipmentId);
+        @GetMapping("/shipments/{shipmentId}")
+        public ResponseEntity<ShipmentDetailResponse> getShipment(@PathVariable String shipmentId) {
+                logger.debug("Getting shipment: {}", shipmentId);
 
-        var query = new GetShipmentQuery(shipmentId);
-        ShipmentDto shipment = getShipmentHandler.handle(query);
+                var query = new GetShipmentQuery(shipmentId);
+                ShipmentDto shipment = getShipmentHandler.handle(query);
 
-        return ResponseEntity.ok(new ShipmentDetailResponse(
-                shipment.shipmentId(),
-                shipment.orderId(),
-                shipment.trackingNumber(),
-                shipment.status()));
-    }
+                return ResponseEntity.ok(new ShipmentDetailResponse(
+                                shipment.shipmentId(),
+                                shipment.orderId(),
+                                shipment.trackingNumber(),
+                                shipment.status()));
+        }
 
-    public record CreateShipmentRequest(
-            String orderId) {
-    }
+        public record CreateShipmentRequest(
+                        String orderId) {
+        }
 
-    public record DispatchShipmentRequest(
-            String carrier,
-            String trackingNumber) {
-    }
+        public record DispatchShipmentRequest(
+                        String carrier,
+                        String trackingNumber) {
+        }
 
-    public record ShipmentResponse(
-            String shipmentId,
-            String trackingNumber,
-            String status,
-            String message) {
-    }
+        public record ShipmentResponse(
+                        String shipmentId,
+                        String trackingNumber,
+                        String status,
+                        String message) {
+        }
 
-    public record ShipmentDetailResponse(
-            String shipmentId,
-            String orderId,
-            String trackingNumber,
-            String status) {
-    }
+        public record ShipmentDetailResponse(
+                        String shipmentId,
+                        String orderId,
+                        String trackingNumber,
+                        String status) {
+        }
 }

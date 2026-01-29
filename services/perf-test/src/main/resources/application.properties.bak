@@ -1,0 +1,22 @@
+spring.application.name=cart-service
+server.port=8083
+
+# H2 Database (Development)
+spring.datasource.url=jdbc:h2:mem:cart
+spring.datasource.driverClassName=org.h2.Driver
+spring.datasource.username=sa
+spring.datasource.password=
+spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+spring.h2.console.enabled=true
+
+# JPA
+spring.jpa.hibernate.ddl-auto=create-drop
+spring.jpa.show-sql=true
+
+# Logging
+logging.level.com.konasl.cart=INFO
+
+# Actuator
+management.endpoints.web.exposure.include=health,info,metrics
+management.endpoint.health.show-details=when-authorized
+management.health.defaults.enabled=true

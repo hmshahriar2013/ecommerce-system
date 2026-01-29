@@ -8,13 +8,19 @@ dependencies {
     implementation project(':shared:common')
     
     // Spring Boot Web for REST API (inbound adapter)
-    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation('org.springframework.boot:spring-boot-starter-web') {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
+    }
+    implementation 'org.springframework.boot:spring-boot-starter-undertow'
     
     // Spring Boot Data JPA (outbound adapter)
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     
     // Spring AMQP for RabbitMQ
     implementation 'org.springframework.boot:spring-boot-starter-amqp'
+    
+    // Spring Boot Actuator for health checks
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
     
     // PostgreSQL for event store and read models
     runtimeOnly 'org.postgresql:postgresql'
