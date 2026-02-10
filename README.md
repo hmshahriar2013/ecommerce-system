@@ -11,22 +11,38 @@ A production-ready backend monorepo built with **Java 21**, **Spring Boot 3.4.1*
 
 ## 🚀 Quick Start
 
+### Prerequisites
+- **Java 21** (JDK 21)
+- **Gradle 8.11** at `D:\E-drive-Software\gradle-8.11`
+- Windows OS (batch/PowerShell scripts provided)
+
 ### Start All Services
 
-**Option 1: Batch File (Recommended)**
-```batch
-start-all.bat
-```
-
-**Option 2: PowerShell**
 ```powershell
 .\start-services.ps1
 ```
 
-Either command will:
-1. Build all 8 microservices
-2. Start each service in its own command window
+This will:
+1. Build all 8 microservices with memory optimization
+2. Start each service in its own PowerShell window
 3. Services will be ready in 30-60 seconds
+
+**Alternative (simpler):**
+```batch
+start-all.bat
+```
+
+### Stop All Services
+
+```powershell
+.\stop-all-services.ps1
+```
+
+This will:
+1. Detect all running services on ports 8080-8087
+2. Display found services with process IDs
+3. Prompt for confirmation before stopping
+4. Gracefully terminate all Java processes
 
 ### Service URLs
 | Service | Port | URL |
@@ -40,30 +56,64 @@ Either command will:
 | Fulfillment | 8086 | http://localhost:8086 |
 | Inventory | 8087 | http://localhost:8087 |
 
-### Test a Service
+### Performance Testing
+
+Run comprehensive E2E performance tests against all services:
+
+```batch
+# Default: 100 scenarios over 60 seconds
+run-performance-test.bat
+
+# Custom: 500 scenarios over 120 seconds
+run-performance-test.bat 500 120
+
+# Stress test: 2000 scenarios over 150 seconds
+run-performance-test.bat 2000 150
+```
+
+The performance test will:
+- ✅ Execute complete E2E flow across all 8 services
+- ✅ Create users, products, carts, orders, payments, fulfillment
+- ✅ Report success/failure counts and total execution time
+- ✅ Use memory-optimized settings suitable for laptops
+
+**Recommended Starting Point:** `run-performance-test.bat 500 60` (8-9 requests/second)
+
+See [MEMORY-OPTIMIZATION.md](MEMORY-OPTIMIZATION.md) for detailed performance guidelines.
+
+### Test Individual Service
 ```bash
 # Health check
 curl http://localhost:8081/actuator/health
 
 # Example API call (Catalog)
-curl http://localhost:8081/api/v1/products
+curl http://localhost:8081/api/catalog/products
 ```
 
 ## 🏗️ Architecture
 
-This repository implements **Hexagonal Architecture** (Ports and Adapters) with:
+This repository implements **Hexagonal Architecture** (Ports and Adapters) with **memory optimization** for resource-constrained environments.
 
 ### Layer Structure
 - **Domain Layer**: Pure business logic, zero framework dependencies
 - **Application Layer**: Use cases, command/query handlers, port interfaces
 - **Adapter Layer**: REST controllers, repository implementations, external integrations
-- **Infrastructure Layer**: Spring Boot configuration, dependency injection
+- **Infrastructure Layer**: Spring Boot configuration, dependency injection, **Undertow** web server
 
 ### Design Patterns
 - **DDD (Domain-Driven Design)**: Aggregates, value objects, domain events
 - **CQRS (Command Query Responsibility Segregation)**: Separate read/write models
 - **Event Sourcing**: Events as the source of truth
 - **Outbox Pattern**: Reliable event publishing with transactional guarantees
+
+### Memory Optimization
+- JVM Settings: 128-384MB heap per service with G1GC
+- **Undertow Server**: ~80MB less memory than Tomcat per service
+- Connection Pooling: HikariCP with 5 max connections
+- Thread Pooling: 20 worker threads, 5-10 task execution threads
+- **Total Memory**: ~4GB for 8 services + performance test
+
+See [MEMORY-OPTIMIZATION.md](MEMORY-OPTIMIZATION.md) for complete optimization guide.
 
 ## 📁 Repository Structure
 
@@ -77,14 +127,19 @@ This repository implements **Hexagonal Architecture** (Ports and Adapters) with:
 │   ├── orders/                 # Order management (8084)
 │   ├── payments/               # Payment processing (8085)
 │   ├── fulfillment/            # Order fulfillment (8086)
-│   └── inventory/              # Stock management (8087)
-├── shared/                     # Shared libraries
-│   └── common/                 # Common domain patterns
-│       ├── eventsourcing/      # Event sourcing infrastructure
-│       ├── cqrs/              # CQRS patterns
-│       ├── domain/            # Base domain classes
-│       └── outbox/            # Outbox pattern implementation
-├── docs/                       # Documentation
+│   └── E2E-TESTING-GUIDE.md   # E2E testing guide
+│   └── DECISIONS.md           # Architecture decisions
+├── .github/
+│   ├── copilot-instructions.md # AI development rules
+│   └── instructions/          # Language-specific rules
+│       ├── java.instructions.md
+│       └── springboot.instructions.md
+├── start-services.ps1         # Start all services (PowerShell)
+├── start-all.bat              # Start all services (Batch - simple)
+├── stop-all-services.ps1      # Stop all services gracefully
+├── run-performance-test.bat   # Performance/load testing
+├── check-memory.bat           # Monitor Java memory usage
+├── MEMORY-OPTIMIZATION.md     # Memory optimization guide
 │   ├── DDD-CQRS-ES-GUIDE.md   # Pattern guide
 │   ├── QUICKSTART.md          # Getting started
 │   └── DECISIONS.md           # Architecture decisions
@@ -111,51 +166,11 @@ services/<service-name>/
     ├── application/         # Use cases
     │   ├── command/        # Write operations
     │   ├── query/          # Read operations
-    │   └── handler/        # Command/Query handlers
-    ├── adapters/
-    │   ├── inbound/        # REST controllers, event listeners
-    │   └── outbound/       # Repository implementations
-    └── infrastructure/      # Spring configuration
-## 🚀 Getting Started
+   🧪 Testing
 
-### Prerequisites
-- **Java 21** (JDK 21)
-- **Gradle 8.11** at `D:\E-drive-Software\gradle-8.11`
-- Windows OS (batch scripts provided)
-- IDE with Java support (IntelliJ IDEA recommended)
+### Automated End-to-End Testing
 
-### Running All Services (Easiest)
-
-```batch
-start-all.bat
-```
-
-This will build and start all 8 microservices in separate windows.
-
-### Building Manually
-
-```batch
-# Build all microservices
-D:\E-drive-Software\gradle-8.11\bin\gradle.bat ^
-  :services:catalog:build ^
-  :services:cart:build ^
-  :services:fulfillment:build ^
-  :services:inventory:build ^
-  :services:orders:build ^
-  :services:payments:build ^
-  :services:pricing:build ^
-  :services:user-access:build ^
-  -x test --no-daemon
-
-# Build specific service
-D:\E-drive-Software\gradle-8.11\bin\gradle.bat :services:catalog:build -x test
-```
-
-### Running Individual Services
-
-```batch
-# Run specific service
-D:\E-drive-Software\gradle-8.11\bin\gradle.bat :services:catalog:bootRun --no-daemon
+Wait 30-60 seconds for services to start, then run automated testsvices:catalog:bootRun --no-daemon
 ```
 
 ### Testing Services
@@ -197,9 +212,7 @@ See [E2E-TESTING-GUIDE.md](docs/E2E-TESTING-GUIDE.md) for details.
 # Health checks
 curl http://localhost:8080/actuator/health  # User Access
 curl http://localhost:8081/actuator/health  # Catalog
-curl http://localhost:8082/actuator/health  # Pricing
-curl http://localhost:8083/actuator/health  # Cart
-curl http://localhost:8084/actuator/health  # Orders
+**Complete E2E Happy Path Test:**
 curl http://localhost:8085/actuator/health  # Payments
 curl http://localhost:8086/actuator/health  # Fulfillment
 curl http://localhost:8087/actuator/health  # Inventory
@@ -256,9 +269,9 @@ Infrastructure → Adapters → Application → Domain
 
 - [**Services README**](SERVICES-README.md) - Service ports, API examples, testing guide
 - [**DDD-CQRS-ES Guide**](docs/DDD-CQRS-ES-GUIDE.md) - Pattern explanations
-- [**Architecture Guide**](docs/ARCHITECTURE.md) - Detailed hexagonal architecture
-- [**Decision Records**](docs/DECISIONS.md) - Architectural decisions
-- [**GitHub Copilot Instructions**](.github/copilot-instructions.md) - AI development guidelines
+- [**MEMORY-OPTIMIZATION.md**](MEMORY-OPTIMIZATION.md) - Memory tuning for resource-constrained environments
+- [**E2E Testing Guide**](docs/E2E-TESTING-GUIDE.md) - End-to-end testing instructions
+- [**DDD-CQRS-ES Guide**](docs/DDD-CQRS-ES-GUIDE.md) - Domain-driven design patternsent guidelines
 
 ## 🛠️ Development Guidelines
 
@@ -348,41 +361,47 @@ java -jar services/catalog/build/libs/catalog.jar
 3. **Pricing** (8082) - Dynamic pricing engine
 4. **Cart** (8083) - Shopping cart with Money value object
 5. **Orders** (8084) - Order placement and confirmation
-6. **Payments** (8085) - Payment processing
-7. **Fulfillment** (8086) - Shipment creation and dispatch
-8. **Inventory** (8087) - Stock management with reservations
+6.# Unit & Integration Testing
 
-### ✅ Patterns Implemented
-- Event Sourcing with EventStore
-- CQRS with CommandHandler and QueryHandler
-- Outbox Pattern for reliable event publishing
-- Domain Events for all state changes
-- Value Objects (Money, Email, Username, IDs)
-- Aggregate Roots with event-driven state
-- Read Model Projections
-- Hexagonal Architecture throughout
+```batch
+# Run all tests
+gradle test
 
-### ✅ Common Infrastructure
-- EventStore interface and implementations
-- OutboxRepository interface and implementations
-- CommandHandler/QueryHandler base patterns
-- DomainEvent base interface
-- AggregateRoot base class
-- EventPublisher interface
+# Run tests for specific service
+gradle :services:catalog:test
 
-## 🤝 Contributing
+# Run with coverage
+gradle test jacocoTestReport
+```
 
-This repository is configured for GitHub Copilot assistance. When contributing:
+## 📦 Building & Running
 
-1. Read [GitHub Copilot Instructions](.github/copilot-instructions.md)
-2. Follow hexagonal architecture principles strictly
-3. Maintain layer boundaries (no Spring in domain/application)
-4. Write tests for new functionality
-5. Use Java 21 features (records, pattern matching)
-6. Emit domain events for all state changes
-7. Use value objects instead of primitives
+### Build All Services
+```batch
+# Build with tests
+gradle build
 
-## 🎓 Learning Resources
+# Build without tests (faster)
+gradle build -x test
+```
+
+### Build Specific Service
+```batch
+gradle :services:catalog:build -x test
+```
+
+### Run Individual Service
+```batch
+# Via Gradle
+gradle :services:catalog:bootRun
+
+# Via JAR
+java -jar services/catalog/build/libs/catalog.jar
+```
+
+**NMEMORY-OPTIMIZATION.md](MEMORY-OPTIMIZATION.md) - Performance optimization guide
+- [docs/E2E-TESTING-GUIDE.md](docs/E2E-TESTING-GUIDE.md) - Testing strategies
+- [docs/DDD-CQRS-ES-GUIDE.md](docs/DDD-CQRS-ES-GUIDE.md) - Pattern explanations
 
 - [SERVICES-README.md](SERVICES-README.md) - Quick start and API examples
 - [docs/DDD-CQRS-ES-GUIDE.md](docs/DDD-CQRS-ES-GUIDE.md) - Pattern explanations
@@ -399,9 +418,29 @@ This repository is configured for GitHub Copilot assistance. When contributing:
 - Ready for development and extension
 
 ## 📝 License
+MEMORY-OPTIMIZATION.md](MEMORY-OPTIMIZATION.md) for performance issues
+- Review [docs/E2E-TESTING-GUIDE.md](docs/E2E-TESTING-GUIDE.md) for testing help
+- Review [docs/DECISIONS.md](docs/DECISIONS.md) for architectural choices
+- Consult [.github/copilot-instructions.md](.github/copilot-instructions.md) for coding rules
 
-[Add your license here]
+## 🚀 Quick Command Reference
 
+```batch
+# Start all services
+.\start-services.ps1
+
+# Stop all services
+.\stop-all-services.ps1
+
+# Performance test (500 scenarios, 60s ramp)
+run-performance-test.bat 500 60
+
+# Health check all services
+curl http://localhost:8080/actuator/health  # Repeat for 8080-8087
+
+# Monitor memory usage
+.\check-memory.bat
+```
 ## 🙋 Support
 
 For questions:
